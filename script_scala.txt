@@ -1,0 +1,197 @@
+##Using a map Transformation to Convert Text Data into Scala Contact
+Objects
+case class Contact(id:Long, name:String, email:String)
+
+val contactData = Array("1#Clément#birette@domain.com","2#Yohon#fereres@domain.com")
+
+val contactDataRDD = spark.sparkContext.parallelize(contactData)
+
+val contactRDD = contactDataRDD.map(l => {
+    val contactArray = l.split("#")
+    Contact(contactArray(0).toLong, contactArray(1), contactArray(2))
+})
+
+contactRDD.collect.foreach(println)
+
+Transforming from a Collection of Strings to a Collection of Integers
+
+val stringLenRDD = stringRDD.map(l => l.length)
+
+stringLenRDD.collect.foreach(println)
+
+**************flatMap(func)*******************
+Using the flatMap Transformation to Transform Lines into Words
+
+val wordRDD = stringRDD.flatMap(line => line.split(" "))
+
+wordRDD.collect().foreach(println)
+
+The Behavior of map vs. flatMap
+stringRDD.map(line => line.split(" ")).collect
+
+stringRDD.flatMap(line => line.split(" ")).collect
+
+******************filter(func)**************
+Filtering for Lines That Contain the Word Awesome
+val awesomeLineRDD = stringRDD.filter(line => line.contains("awesome"))
+awesomeLineRDD.collect
+
+*****************mapPartitions*********************
+import scala.util.Random
+val sampleList = Array("One", "Two", "Three", "Four","Five")
+
+val sampleRDD = spark.sparkContext.parallelize(sampleList, 2)
+
+val result = sampleRDD.mapPartitions((itr:Iterator[String]) => { 
+
+    val rand = new Random(System.currentTimeMillis + Random.nextInt)
+
+    itr.map(l => l + ":" + rand.nextInt)
+
+    })
+    
+    result.collect()
+
+
+Creating a Function to Encapsulate the Logic of Adding Random Numbers to Each Row
+
+import scala.util.Random
+
+def addRandomNumber(rows:Iterator[String]) = {
+    val rand = new Random(System.currentTimeMillis + Random.nextInt)
+    rows.map(l => l + " : " + rand.nextInt)
+    }
+
+
+Using the addRandomNumber Function in the mapPartitions Transformation
+
+val result = sampleRDD.mapPartitions((rows:Iterator[String]) => addRandomNumber(rows))
+
+Using the mapPartitionsWithIndex Transformation
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numberRDD.mapPartitionsWithIndex((idx:Int, itr:Iterator[Int]) => {
+    itr.map(n => (idx, n) )
+    }).collect()
+
+***********************union(otherRDD)************************************
+
+Combining Rows from Two RDDs
+val rdd1 = spark.sparkContext.parallelize(Array(1,2,3,4,5))
+val rdd2 = spark.sparkContext.parallelize(Array(1,6,7,8))
+val rdd3 = rdd1.union(rdd2)
+rdd3.collect()
+
+**********************intersection(otherRDD)*****************************
+val rdd1 = spark.sparkContext.parallelize(Array("One", "Two", "Three"))
+val rdd2 = spark.sparkContext.parallelize(Array("two","One","threed","One"))
+val rdd3 = rdd1.intersection(rdd2)
+rdd3.collect()
+
+*********************subtract(otherRDD)************************
+Removing Stop Words Using the subtract Transformation
+
+val words = spark.sparkContext.parallelize(List("The amazing thing about spark is that it is very simple to learn"))
+.flatMap(l => l.split(" "))
+.map(w => w.toLowerCase)
+
+val stopWords = spark.sparkContext.parallelize(List("the it is to that"))
+.flatMap(l => l.split(" "))
+
+val realWords = words.subtract(stopWords)
+
+realWords.collect()
+
+*******************distinct()*************************************
+Removing Duplicates Using the distinct Transformation
+val duplicateValueRDD = spark.sparkContext.parallelize(List("one", 1,"two", 2, "three", "one", "two", 1, 2))
+duplicateValueRDD.distinct().collect
+
+*******************sample(withReplacement, fraction, seed)*******************
+Sampling with Replacement
+val numbers =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numbers.sample(true, 0.3).collect
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""ACTION"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+***********************************collect()**************************************
+Using the collect Action to See the Rows in the Small RDD
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numberRDD.collect()
+
+***********************************Count****************************************
+Counting the Number of Rows in an RDD
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numberRDD.count()
+
+***********************************first()****************************************
+Getting the First Row in an RDD
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numberRDD.first()
+
+**********************************take(n)*****************************************
+Getting the First Row in an RDD
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numberRDD.take(6)
+
+
+*******************************Reduce(func)*************************************
+Defining an RDD of Integers
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+
+Defining a function to perform addition
+def add(v1:Int, v2:Int) : Int = {
+      println(s"v1: $v1, v2: $v2 => (${v1 + v2})")
+      v1 + v2
+}
+
+Using the Function add as an Argument for the reduce Action
+numberRDD.reduce(add)
+
+*************************TakeOrdered**********************************
+Examples of the takeOrdered Action with Ascending and
+Descending Order
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numberRDD.takeOrdered(4)
+numberRDD.takeOrdered(4)(Ordering[Int].reverse)
+
+**************************Top(n,[ordering])************
+val numberRDD =  spark.sparkContext.parallelize(List(1,2,3,4,5,6,7,8,9,10), 2)
+numberRDD.top(4)
+
+saveAsTextFile(path)
+
+
+#############################################PAir RDD#########################################
+val rdd = sc.parallelize(List("Spark","is","an", "amazing", "piece","of","technology"))
+val pairRDD = rdd.map(w => (w.length,w))
+pairRDD.collect().foreach(println)
+
+**********************************************groupByKey([numTasks])*********************************
+
+val wordByLenRDD = pairRDD.groupByKey()
+
+wordByLenRDD.collect.foreach(println)
+
+************************************************reduceByKey*****************************************
+
+val candyTx = sc.parallelize(List(("candy1", 5.2), ("candy2", 3.5), ("candy1", 2.0), ("candy2", 6.0), ("candy3", 3.0)))
+
+val somTx = candyTx.reduceByKey((total, value)=>total + value)
+
+somTx.collect()
+
+************************************************sortByKey******************
+
+val summaryByPrice = somTx.map(t => (t._2, t._1)).sortByKey(false)
+summaryByPrice.collect
+
+
+*******************************************join(otherRDD)**************************
+val memberTx = sc.parallelize(List((110, 50.35), (127, 305.2), (126, 211.0),(105, 6.0),(165, 31.0), (110, 40.11)))
+
+val memberInfo = sc.parallelize(List((110, "a"), (127, "b"), (126, "b"),(105, "a"),(165, "c")))
+
+val memberTxInfo = memberTx.join(memberInfo)
+
+memberTxInfo.collect().foreach(println)
+
+(K, V) J (K, W) => (k, (V,W)) J (K,W) => (K, ((V,W),W))
