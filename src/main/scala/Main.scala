@@ -70,76 +70,91 @@ object Main extends App {
   val ss = new SparkSession.Builder().appName("AppHelloWorld").master("local[*]").getOrCreate()
   println(s"Spark Session: ${ss}")
 
-  val rdd = ss.sparkContext.parallelize(1 to 10).map(x => (x, Random.nextInt(100)*x))
+//   val rdd = ss.sparkContext.parallelize(1 to 10).map(x => (x, Random.nextInt(100)*x))
 
-  import ss.implicits._
+//   import ss.implicits._
 
-  val kvDF = rdd.toDF("key","value")
+//   val kvDF = rdd.toDF("key","value")
 
-  println("############################ Schéma################################")
+//   println("############################ Schéma################################")
 
-  kvDF.printSchema()
+//   kvDF.printSchema()
 
-  println("############################ Valeurs################################")
+//   println("############################ Valeurs################################")
 
-  kvDF.show()
-
-
-  println("############################ DataFrame people################################")
+//   kvDF.show()
 
 
-  val peopleRDD = ss.sparkContext.parallelize(Array(Row(1L, "JohnDoe",  30L),Row(2L, "Mary Jane", 25L)))
-
-  val schema = StructType(Array(
-        StructField("id", LongType, false),
-        StructField("name", StringType, true),
-        StructField("age", LongType, true)
-        ))
-
-  val peopleDF = ss.createDataFrame(peopleRDD, schema)
-
-  peopleDF.printSchema()
-
-  peopleDF.show()
+//   println("############################ DataFrame people################################")
 
 
-println("############################ SparSession range################################")
+//   val peopleRDD = ss.sparkContext.parallelize(Array(Row(1L, "JohnDoe",  30L),Row(2L, "Mary Jane", 25L)))
 
-val df = ss.range(5,50).toDF("Val").show()
+//   val schema = StructType(Array(
+//         StructField("id", LongType, false),
+//         StructField("name", StringType, true),
+//         StructField("age", LongType, true)
+//         ))
 
-println("############################ DF from collection################################")
+//   val peopleDF = ss.createDataFrame(peopleRDD, schema)
 
-val films = Seq(("Damon, Matt", "The Bourne Ultimatum", 2007L),("Damon, Matt", "Good Will Hunting", 1997L))
+//   peopleDF.printSchema()
 
-val filmsDF = films.toDF("Acteur","Titre du film", "Année")
-
-filmsDF.printSchema()
-
-filmsDF.show()
-
-println("############################ DF colomn ################################")
-
-val df2 = Seq((1,2),(2,3)).toDF("key","value")
-
-df2.columns
-
-df2.select("key").show()
-
-df2.select(col("key")).show()
-
-df2.select(column("key")).show()
-
-df2.select($"key").show()
-
-df2.select('key).show()
-
-df2.select(df2.col("key")).show()
-
-df2.select('key, 'key > 1).show()
+//   peopleDF.show()
 
 
+// println("############################ SparSession range################################")
 
-  
+// val df = ss.range(5,50).toDF("Val").show()
+
+// println("############################ DF from collection################################")
+
+// val films = Seq(("Damon, Matt", "The Bourne Ultimatum", 2007L),("Damon, Matt", "Good Will Hunting", 1997L))
+
+// val filmsDF = films.toDF("Acteur","Titre du film", "Année")
+
+// filmsDF.printSchema()
+
+// filmsDF.show()
+
+// println("############################ DF colomn ################################")
+
+// val df2 = Seq((1,2),(2,3)).toDF("key","value")
+
+// df2.columns
+
+// df2.select("key").show()
+
+// df2.select(col("key")).show()
+
+// df2.select(column("key")).show()
+
+// df2.select($"key").show()
+
+// df2.select('key).show()
+
+// df2.select(df2.col("key")).show()
+
+// df2.select('key, 'key > 1).show()
+
+
+println("############################ DF from csv ################################")
+
+val dataDF = ss.read
+.option("header","true")
+.option("sep",",")
+.option("inferSchema", "true")
+.csv("/home/ubuntu/workspace/hello-world/datas/data.csv")
+
+
+
+  dataDF.printSchema()
+
+  dataDF.show(10)
+
+  dataDF.selectExpr("*", "(ai0 * ai0) as AI0_square").show()
+
+  dataDF.selectExpr("*", "(ai0 * ai0 + ai1*ai1 + ai2*ai2 +ai3*ai3 + ai4*ai4 +ai5*ai5) as Somme_quadratique").show()
 
 
 }
