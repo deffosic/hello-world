@@ -5,6 +5,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.SparkSession
 import scala.util.Random
+import org.apache.spark.sql.SaveMode
 
 object Main extends App {
   println("Hello, World!")
@@ -68,6 +69,8 @@ object Main extends App {
   //#######################################################################################Data Frame#################################################
 
   val ss = new SparkSession.Builder().appName("AppHelloWorld").master("local[*]").getOrCreate()
+  //Arrête d'afficher les logs
+  ss.sparkContext.setLogLevel("OFF")
   println(s"Spark Session: ${ss}")
 
 //   val rdd = ss.sparkContext.parallelize(1 to 10).map(x => (x, Random.nextInt(100)*x))
@@ -140,21 +143,130 @@ object Main extends App {
 
 println("############################ DF from csv ################################")
 
-val dataDF = ss.read
-.option("header","true")
-.option("sep",",")
-.option("inferSchema", "true")
-.csv("/home/ubuntu/workspace/hello-world/datas/data.csv")
+// val dataDF = ss.read
+// .option("header","true")
+// .option("sep",",")
+// .option("inferSchema", "true")
+// .csv("/home/ubuntu/workspace/hello-world/datas/data.csv")
 
 
 
-  dataDF.printSchema()
+//   dataDF.printSchema()
 
-  dataDF.show(10)
+//   dataDF.show(10)
 
-  dataDF.selectExpr("*", "(ai0 * ai0) as AI0_square").show()
+//   dataDF.selectExpr("*", "(ai0 * ai0) as AI0_square").show()
 
-  dataDF.selectExpr("*", "(ai0 * ai0 + ai1*ai1 + ai2*ai2 +ai3*ai3 + ai4*ai4 +ai5*ai5) as Somme_quadratique").show()
+//   dataDF.selectExpr("*", "(ai0 * ai0 + ai1*ai1 + ai2*ai2 +ai3*ai3 + ai4*ai4 +ai5*ai5) as Somme_quadratique").show()
+
+
+  println("############################ DF from text file orders ################################")
+
+  val schema_order = StructType(Array(
+    StructField("orderid",StringType, false),
+    StructField("customerid", IntegerType, false),
+    StructField("campaignid", IntegerType, true),
+    StructField("orderdate", TimestampType, true),
+    StructField("city", StringType, true),
+    StructField("state", StringType, true),
+    StructField("zipcode", StringType, true),
+    StructField("paymenttype", StringType, true),
+    StructField("totalprice", DoubleType, true),
+    StructField("numorderlines", IntegerType, true),
+    StructField("numunits", IntegerType, true)
+  ))
+
+  val df_orders_db = ss.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter", ";")
+      .option("header","true")
+      .load("/home/ubuntu/workspace/hello-world/datas/csv/db_orders.csv")
+
+  println("Schema : Orders_DB")
+
+  df_orders_db.printSchema()
+
+
+
+  val df_orders = ss.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter", "\t")
+      .option("header","true")
+      .schema(schema_order)
+      .load("/home/ubuntu/workspace/hello-world/datas/csv/orders.txt")
+
+  println("Schema : Orders")
+
+  df_orders.printSchema()
+
+  df_orders.show(10)
+
+  val df_products = ss.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter", "\t")
+      .option("header","true")
+      .load("/home/ubuntu/workspace/hello-world/datas/csv/product.txt")
+    
+  println("Schema : Products")
+
+  df_products.printSchema
+
+  val df_orderlines = ss.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter", "\t")
+      .option("header","true")
+      .load("/home/ubuntu/workspace/hello-world/datas/csv/orderline.txt")
+
+  println("Schema : OrdersLines")
+
+  df_orderlines.printSchema
+
+
+  val df_orders_good = df_orders.withColumnRenamed("numunits", "numunits_orders")
+  .withColumnRenamed("totalprice", "totalprice_orders")
+  
+  println("Schema : Orders Good")
+
+  df_orders_good.printSchema()
+
+
+  val df_join_ordres = df_orderlines.join(df_orders_good, df_orders_good.col("orderid")===df_orderlines.col("orderid"), "inner")
+
+  println("Schema : OrdersLine Join with Orders")
+
+  df_join_ordres.printSchema()
+
+  df_join_ordres.show(5)
+
+  val df_join_ordres_products = df_join_ordres.join(df_products,df_products.col("productid")===df_join_ordres.col("productid"), "inner")
+
+  println("Schema : OrdersLine Join with Orders and Join with Products")
+
+  df_join_ordres_products.printSchema()
+
+  df_join_ordres_products.show(5)
+
+
+  val df_state_city = df_join_ordres_products.withColumn("total_amount", round(col("numunits_orders") * col("totalprice_orders"), 3))
+      .groupBy("state", "city")
+      .sum("total_amount")
+      
+  df_state_city.show()
+
+  println("####################Save DF###################")
+
+  df_state_city.repartition(1)
+  .write
+  .format("com.databricks.spark.csv")
+  .mode(SaveMode.Overwrite)
+  .option("header","true")
+  .csv("/home/ubuntu/workspace/hello-world/datas/saves/csv")
+  //.save("/home/ubuntu/workspace/hello-world/datas/saves/csv")
+
+
+    
+
+
 
 
 }

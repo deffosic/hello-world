@@ -1,0 +1,39 @@
+version: '3'
+services:
+  yarn-resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    ports:
+      - "8088:8088" # Port pour l'interface utilisateur de ResourceManager
+
+  yarn-nodemanager1:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    environment:
+      - YARN_RESOURCEMANAGER_HOSTNAME=yarn-resourcemanager
+    ports:
+      - "8042:8042" # Port pour l'interface utilisateur de NodeManager
+
+  yarn-nodemanager2:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    environment:
+      - YARN_RESOURCEMANAGER_HOSTNAME=yarn-resourcemanager
+    ports:
+      - "8142:8042"
+
+  yarn-nodemanager3:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    environment:
+      - YARN_RESOURCEMANAGER_HOSTNAME=yarn-resourcemanager
+    ports:
+      - "8242:8042"
+
+  # Optionnel: HDFS NameNode pour le stockage de données
+  hdfs-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    ports:
+      - "9870:9870" # Port pour l'interface utilisateur de NameNode
+
+  # Optionnel: HDFS DataNode pour le stockage de données
+  hdfs-datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    environment:
+      - HDFS_NAMENODE_HOSTNAME=hdfs-namenode

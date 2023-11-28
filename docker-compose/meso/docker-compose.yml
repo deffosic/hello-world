@@ -1,0 +1,72 @@
+version: '3'
+services:
+  zookeeper:
+    image: zookeeper:3.4.9
+    ports:
+      - "2181:2181"
+
+  mesos-master:
+    image: mesosphere/mesos-master:1.4.0
+    ports:
+      - "5050:5050"
+    environment:
+      MESOS_ZK: zk://zookeeper:2181/mesos
+      MESOS_QUORUM: 1
+      MESOS_LOG_DIR: /var/log/mesos
+      MESOS_WORK_DIR: /var/lib/mesos
+    depends_on:
+      - zookeeper
+
+  mesos-agent1:
+    image: mesosphere/mesos-agent:1.4.0
+    privileged: true
+    environment:
+      MESOS_MASTER: mesos-master:5050
+      MESOS_LOG_DIR: /var/log/mesos
+      MESOS_WORK_DIR: /var/lib/mesos
+      MESOS_SYSTEMD_ENABLE_SUPPORT: "false"
+      MESOS_RESOURCES: cpus:2;mem:4096;disk:10000;ports:[31000-32000]
+      MESOS_ATTRIBUTES: spark:true
+    depends_on:
+      - mesos-master
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /tmp:/run/systemd/system
+      - /home/ubuntu/workspace/spark-3.5.0-bin-hadoop3:/opt/spark
+
+  mesos-agent2:
+    image: mesosphere/mesos-agent:1.4.0
+    privileged: true
+    environment:
+      MESOS_MASTER: mesos-master:5050
+      MESOS_LOG_DIR: /var/log/mesos
+      MESOS_WORK_DIR: /var/lib/mesos      
+      MESOS_SYSTEMD_ENABLE_SUPPORT: "false"
+      MESOS_RESOURCES: cpus:2;mem:4096;disk:10000;ports:[31000-32000]
+      MESOS_ATTRIBUTES: spark:true
+    depends_on:
+      - mesos-master
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /tmp:/run/systemd/system
+      - /home/ubuntu/workspace/spark-3.5.0-bin-hadoop3:/opt/spark
+
+  mesos-agent3:
+    image: mesosphere/mesos-agent:1.4.0
+    privileged: true
+    environment:
+      MESOS_MASTER: mesos-master:5050
+      MESOS_LOG_DIR: /var/log/mesos
+      MESOS_WORK_DIR: /var/lib/mesos
+      MESOS_SYSTEMD_ENABLE_SUPPORT: "false"
+      MESOS_RESOURCES: cpus:2;mem:4096;disk:10000;ports:[31000-32000]
+      MESOS_ATTRIBUTES: spark:true
+    depends_on:
+      - mesos-master
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /tmp:/run/systemd/system
+      - /home/ubuntu/workspace/spark-3.5.0-bin-hadoop3:/opt/spark
