@@ -1,4 +1,5 @@
 .vscode
 .metals
 .bloop
-/projet
+./projet
+./target
