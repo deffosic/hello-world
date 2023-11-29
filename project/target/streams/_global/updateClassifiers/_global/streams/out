@@ -1,4 +1,3 @@
-[warn] sbt-bloop_2.12_1.0-1.5.11-sources.jar no longer exists at /home/cedric/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.5.11/sbt-bloop_2.12_1.0-1.5.11-sources.jar
-[debug] not up to date. inChanged = false, force = false
+[debug] not up to date. inChanged = true, force = false
 [debug] Updating ProjectRef(uri("file:/home/ubuntu/workspace/hello-world/project/"), "hello-world-build")...
 [debug] Done updating ProjectRef(uri("file:/home/ubuntu/workspace/hello-world/project/"), "hello-world-build")

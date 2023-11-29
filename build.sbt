@@ -1,4 +1,15 @@
+import sbtassembly.{MergeStrategy, PathList}
 
+assembly / assemblyMergeStrategy := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case PathList("module-info.class") => MergeStrategy.discard
+  case "application.conf" => MergeStrategy.concat
+  case "reference.conf" => MergeStrategy.concat
+  case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
+  case x if x.endsWith(".proto") => MergeStrategy.first
+  case x if x.endsWith(".class") => MergeStrategy.first
+  case _ => MergeStrategy.deduplicate
+}
 // The simplest possible sbt build file is just one line:
 
 scalaVersion := "2.12.18"
@@ -35,6 +46,19 @@ libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.5.0" % "provided"
 
 // https://mvnrepository.com/artifact/org.apache.spark/spark-streaming
 libraryDependencies += "org.apache.spark" %% "spark-streaming" % "3.5.0" % "provided"
+
+// https://mvnrepository.com/artifact/mysql/mysql-connector-java
+libraryDependencies += "mysql" % "mysql-connector-java" % "8.0.33"
+
+// https://mvnrepository.com/artifact/org.postgresql/postgresql
+libraryDependencies += "org.postgresql" % "postgresql" % "42.6.0"
+
+
+// https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.20.0"
+
+
+
 
 
 

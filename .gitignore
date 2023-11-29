@@ -1,6 +1,10 @@
 .vscode
 .metals
 .bloop
-./projet
+./project
 ./target
 ./datas/csv
+./docker-compose/postgres/data/
+./docker-compose/mysql/data/
+./docker-compose/docker-compose_Mysql.yml
+./docker-compose/docker-compose_Postgresql.yml

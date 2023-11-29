@@ -35,11 +35,11 @@ object SparkAndMysql {
     "Makeda18!")
     if (dfMysql != null) {
       dfMysql.printSchema()
-      traceLog.info("SHOW DATAFRAME FROM TABLE orders")
+      traceLog.info("SHOW DATAFRAME FROM TABLE table_orders")
       dfMysql.show()
     }
 
-    val dfQuery = readDataFrameFromMySqlDb(sparkSession, "localhost:3361",
+    val dfQuery = readDataFrameFromMySqlDb(sparkSession, "localhost:3306",
       "DB_ORDERS",
       "(select * from DB_ORDERS.table_orders group by state, city) table_summary",
       "root",
@@ -50,31 +50,31 @@ object SparkAndMysql {
     }
   }
 
-  /**
-   * This method is to join two dataframes
-   * @author KANDJI
-   * @param sparkSession  SparkSession for defining Dataframe
-   * @see readDataFrameFromMySqlDb
-   */
-  def joinTables(sparkSession: SparkSession) = {
-    /*val dfOrders = sparkSession.read.jdbc("jdbc:mysql://127.0.0.1:3361/bigdata_test_db",
-      "bigdata_test_db.orders", properties)*/
+//   /**
+//    * This method is to join two dataframes
+//    * @author KANDJI
+//    * @param sparkSession  SparkSession for defining Dataframe
+//    * @see readDataFrameFromMySqlDb
+//    */
+//   def joinTables(sparkSession: SparkSession) = {
+//     /*val dfOrders = sparkSession.read.jdbc("jdbc:mysql://127.0.0.1:3361/bigdata_test_db",
+//       "bigdata_test_db.orders", properties)*/
 
-    val dfOrders = readDataFrameFromMySqlDb(sparkSession, "localhost:3361", "bigdata_test_db","orders", "userBigdata",
-      "6gUSN9N_/.mJ686")
+//     val dfOrders = readDataFrameFromMySqlDb(sparkSession, "localhost:3361", "bigdata_test_db","orders", "userBigdata",
+//       "6gUSN9N_/.mJ686")
 
-    val dfOrderLine = readDataFrameFromMySqlDb(sparkSession, "localhost:3361", "bigdata_test_db","orderline", "userBigdata",
-      "6gUSN9N_/.mJ686")
+//     val dfOrderLine = readDataFrameFromMySqlDb(sparkSession, "localhost:3361", "bigdata_test_db","orderline", "userBigdata",
+//       "6gUSN9N_/.mJ686")
 
-    if (dfOrderLine != null && dfOrders != null) {
-      val dfJoinOrders = dfOrderLine.join(dfOrders, dfOrders.col("orderid") ===
-        dfOrderLine.col("orderid"), "inner").groupBy("customerid").count().withColumnRenamed(
-        "count", "totalorders"
-      )
+//     if (dfOrderLine != null && dfOrders != null) {
+//       val dfJoinOrders = dfOrderLine.join(dfOrders, dfOrders.col("orderid") ===
+//         dfOrderLine.col("orderid"), "inner").groupBy("customerid").count().withColumnRenamed(
+//         "count", "totalorders"
+//       )
 
-      dfJoinOrders.show()
-    }
-  }
+//       dfJoinOrders.show()
+//     }
+//   }
 
   /**
    * Read data from MySql Database

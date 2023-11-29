@@ -21,14 +21,14 @@ object UtilsSpark {
           .master("local[*]")
           .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
           .config("spark.sql.crossJoin.enabled", "true")
-          .enableHiveSupport()
+          //.enableHiveSupport()
           .getOrCreate()
       } else {
         ss = SparkSession.builder()
           .appName("Mon application Spark")
           .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
           .config("spark.sql.crossJoin.enabled", "true")
-          .enableHiveSupport()
+          //.enableHiveSupport()
           .getOrCreate()
       }
       traceLog.info("DEMARRAGE DE LA SESSION SPARK")
